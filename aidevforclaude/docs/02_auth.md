@@ -5,7 +5,7 @@
 ### Google Cloud Console 設定
 - [ ] Google Cloud Console で OAuth 2.0 クライアント ID を作成する
 - [ ] 承認済みリダイレクト URI に Supabase のコールバック URL を登録する
-  - `https://<project>.supabase.co/auth/v1/callback`
+  - `https://jueqlceopvhotyrjwqdm.supabase.co/auth/v1/callback`
 - [ ] クライアント ID とクライアントシークレットを控える
 
 ### Supabase Auth 設定
@@ -16,7 +16,7 @@
   - `https://<your-vercel-domain>/auth/callback`（本番）
 
 ### Auth コールバックルート
-- [ ] `app/auth/callback/route.ts` を作成する（認証後のセッション交換処理）
+- [×] `app/auth/callback/route.ts` を作成する（認証後のセッション交換処理）
 
 ```typescript
 // app/auth/callback/route.ts
@@ -41,16 +41,16 @@ export async function GET(request: Request) {
 ```
 
 ### ログインページ（`/login`）
-- [ ] `app/login/page.tsx` を作成する（Server Component）
-- [ ] 「Googleでログイン」ボタンのみ表示する（メール/パスワード認証は不採用）
-- [ ] ログイン前に訪問していたページの URL を `next` パラメータとして保持する
-- [ ] `supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } })` を実装する
-- [ ] ダーク系デザインで統一する
+- [×] `app/login/page.tsx` を作成する（Server Component）
+- [×] 「Googleでログイン」ボタンのみ表示する（メール/パスワード認証は不採用）
+- [×] ログイン前に訪問していたページの URL を `next` パラメータとして保持する
+- [×] `supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } })` を実装する
+- [×] ダーク系デザインで統一する
 
 ### Middleware による認証ガード
-- [ ] `middleware.ts` が `/admin` 配下へのアクセスを未認証時にリダイレクトすることを確認する
-- [ ] `/login`・`/auth` パスは認証ガードから除外されていることを確認する
-- [ ] `supabase.auth.getUser()` でユーザー確認（`getSession()` は使わない）
+- [×] `middleware.ts` が `/admin` 配下へのアクセスを未認証時にリダイレクトすることを確認する
+- [×] `/login`・`/auth` パスは認証ガードから除外されていることを確認する
+- [×] `supabase.auth.getUser()` でユーザー確認（`getSession()` は使わない）
 
 ### 管理者ロール設定
 - [ ] Supabase Studio で自分のアカウントの `profiles.role` を `'admin'` に手動更新する
