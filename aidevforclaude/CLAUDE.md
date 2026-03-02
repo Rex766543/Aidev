@@ -76,7 +76,6 @@ app/
 | カラム | 型 |
 |--------|----|
 | id | uuid PK（FK → auth.users.id） |
-| email | text |
 | display_name | text |
 | avatar_url | text |
 | role | text（`'user'` or `'admin'`、default: `'user'`） |
@@ -97,10 +96,9 @@ app/
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, email, display_name, avatar_url)
+  insert into public.profiles (id, display_name, avatar_url)
   values (
     new.id,
-    new.email,
     new.raw_user_meta_data->>'full_name',
     new.raw_user_meta_data->>'avatar_url'
   );

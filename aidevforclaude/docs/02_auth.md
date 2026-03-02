@@ -3,17 +3,17 @@
 ## TODO
 
 ### Google Cloud Console 設定
-- [ ] Google Cloud Console で OAuth 2.0 クライアント ID を作成する
-- [ ] 承認済みリダイレクト URI に Supabase のコールバック URL を登録する
+- [×] Google Cloud Console で OAuth 2.0 クライアント ID を作成する
+- [×] 承認済みリダイレクト URI に Supabase のコールバック URL を登録する
   - `https://jueqlceopvhotyrjwqdm.supabase.co/auth/v1/callback`
-- [ ] クライアント ID とクライアントシークレットを控える
+- [×] クライアント ID とクライアントシークレットを控える
 
 ### Supabase Auth 設定
-- [ ] Supabase ダッシュボード → Authentication → Providers → Google を有効化する
-- [ ] Google のクライアント ID / シークレットを設定する
-- [ ] Redirect URL に以下を両方登録する
+- [×] Supabase ダッシュボード → Authentication → Providers → Google を有効化する
+- [×] Google のクライアント ID / シークレットを設定する
+- [×] Redirect URL に以下を両方登録する
   - `http://localhost:3000/auth/callback`（ローカル）
-  - `https://<your-vercel-domain>/auth/callback`（本番）
+  - `https://<your-vercel-domain>/auth/callback`（本番・デプロイ時に追加）
 
 ### Auth コールバックルート
 - [×] `app/auth/callback/route.ts` を作成する（認証後のセッション交換処理）
@@ -53,10 +53,10 @@ export async function GET(request: Request) {
 - [×] `supabase.auth.getUser()` でユーザー確認（`getSession()` は使わない）
 
 ### 管理者ロール設定
-- [ ] Supabase Studio で自分のアカウントの `profiles.role` を `'admin'` に手動更新する
+- [×] Supabase Studio で自分のアカウントの `profiles.role` を `'admin'` に手動更新する
 
 ### 動作確認
-- [ ] ローカルで Google ログインが成功するか確認する
-- [ ] ログイン後に元のページへリダイレクトされるか確認する
-- [ ] 未認証で `/admin` にアクセスするとログインページへ飛ぶか確認する
-- [ ] トリガーにより `profiles` レコードが自動生成されるか確認する
+- [×] ローカルで Google ログインが成功するか確認する
+- [×] ログイン後に元のページへリダイレクトされるか確認する
+- [×] 未認証で `/admin` にアクセスするとログインページへ飛ぶか確認する（curl で 307→/login を確認済み）
+- [×] トリガーにより `profiles` レコードが自動生成されるか確認する
