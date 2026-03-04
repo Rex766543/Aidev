@@ -13,6 +13,10 @@ export default async function VideoPage({
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  const isAdmin = user
+    ? (await supabase.from('profiles').select('role').eq('id', user.id).single()).data?.role === 'admin'
+    : false
+
   const { data: video } = await supabase
     .from('videos')
     .select('id, title, description, youtube_video_id, is_free, is_published, section_id, order_index')
@@ -93,18 +97,33 @@ export default async function VideoPage({
 
       {/* Header */}
       <header className="sticky top-0 z-50 glass border-b border-zinc-800/60">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center gap-3 min-w-0">
-          <Link
-            href={`/courses/${id}`}
-            className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors duration-200 group flex-shrink-0"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="transition-transform duration-200 group-hover:-translate-x-0.5">
-              <path d="M19 12H5M12 19l-7-7 7-7"/>
-            </svg>
-            カリキュラム
-          </Link>
-          <span className="text-zinc-700 flex-shrink-0">/</span>
-          <span className="text-zinc-300 text-sm font-medium truncate">{video.title}</span>
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-3 min-w-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <Link
+              href={`/courses/${id}`}
+              className="flex items-center gap-2 text-zinc-400 hover:text-white text-sm transition-colors duration-200 group flex-shrink-0"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="transition-transform duration-200 group-hover:-translate-x-0.5">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+              カリキュラム
+            </Link>
+            <span className="text-zinc-700 flex-shrink-0">/</span>
+            <span className="text-zinc-300 text-sm font-medium truncate">{video.title}</span>
+          </div>
+          {isAdmin && (
+            <Link
+              href="/admin"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-shrink-0 flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 border border-violet-500/20 transition-all duration-200"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
+              管理画面
+            </Link>
+          )}
         </div>
       </header>
 

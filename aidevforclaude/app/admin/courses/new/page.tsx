@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import ThumbnailInput from '@/app/admin/_components/ThumbnailInput'
 
 export default function NewCoursePage() {
   async function createCourse(formData: FormData) {
@@ -67,13 +68,11 @@ export default function NewCoursePage() {
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-zinc-300">サムネイル URL</label>
-          <input
-            name="thumbnail_url"
-            type="url"
-            className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-3 text-sm transition-all duration-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-            placeholder="https://..."
-          />
+          <label className="block text-sm font-medium text-zinc-300">
+            サムネイル
+            <span className="ml-2 text-xs text-zinc-500 font-normal">YouTube URL を貼ると自動設定</span>
+          </label>
+          <ThumbnailInput />
         </div>
 
         <label className="flex items-center gap-3 cursor-pointer group">

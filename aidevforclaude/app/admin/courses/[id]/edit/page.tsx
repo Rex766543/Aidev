@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import ThumbnailInput from '@/app/admin/_components/ThumbnailInput'
 import {
   updateCourse,
   deleteCourse,
@@ -103,14 +104,11 @@ export default async function EditCoursePage({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">サムネイル URL</label>
-            <input
-              name="thumbnail_url"
-              type="url"
-              defaultValue={course.thumbnail_url ?? ''}
-              className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2.5 focus:outline-none focus:border-blue-500"
-              placeholder="https://..."
-            />
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              サムネイル
+              <span className="ml-2 text-xs text-gray-500 font-normal">YouTube URL を貼ると自動設定</span>
+            </label>
+            <ThumbnailInput defaultValue={course.thumbnail_url ?? ''} />
           </div>
 
           <div className="flex items-center gap-3">

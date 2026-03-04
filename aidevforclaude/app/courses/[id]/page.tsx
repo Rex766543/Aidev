@@ -13,6 +13,10 @@ export default async function CourseDetailPage({
 
   const { data: { user } } = await supabase.auth.getUser()
 
+  const isAdmin = user
+    ? (await supabase.from('profiles').select('role').eq('id', user.id).single()).data?.role === 'admin'
+    : false
+
   const { data: course } = await supabase
     .from('courses')
     .select('id, title, description, thumbnail_url')
@@ -58,14 +62,29 @@ export default async function CourseDetailPage({
             </svg>
             講座一覧
           </Link>
-          {!user && (
-            <Link
-              href={`/login?next=/courses/${id}`}
-              className="text-sm px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25 active:scale-[0.97]"
-            >
-              ログインして全動画を視聴
-            </Link>
-          )}
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Link
+                href="/admin"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg text-violet-400 hover:text-violet-300 hover:bg-violet-500/10 border border-violet-500/20 transition-all duration-200"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                管理画面
+              </Link>
+            )}
+            {!user && (
+              <Link
+                href={`/login?next=/courses/${id}`}
+                className="text-sm px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25 active:scale-[0.97]"
+              >
+                ログインして全動画を視聴
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 
