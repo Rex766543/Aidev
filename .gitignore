@@ -1,2 +1,16 @@
 # MCP configuration (contains sensitive tokens)
 .mcp.json
+
+# macOS metadata
+.DS_Store
+
+# Playwright MCP artifacts
+.playwright-mcp/
+
+# Large local reference file
+sao-novel/references/1023.pdf
+
+# Generated local artifacts
+murder-mystery/pdf/
+presentations/*.pptx
+project-alpha/meetings/*/output/*.docx
