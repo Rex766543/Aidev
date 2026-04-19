@@ -1,0 +1,78 @@
+{
+  "theme": "リスボンの朝市と石畳の路地",
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "audioMode": "generated-audio",
+  "narrationSrc": "",
+  "bgmSrc": "",
+  "bgmVolume": 0.18,
+  "sourceText": "石畳の路地を歩いていると、リスボンの朝は静かなのに色が濃い。\n少し進むだけで市場の活気が見えてきて、果物やパンの香りが一気に旅の気分を高めてくれる。\n有名な観光地だけではなく、こういう日常の風景こそその街らしさがよく伝わる。",
+  "scenes": [
+    {
+      "id": "scene-1",
+      "title": "リスボンの朝市と石畳の路地",
+      "overlayText": "石畳の路地を歩いていると、リスボンの朝は静かなのに色が濃い。 少し進むだけで市場の活気が見えてきて、果物やパンの香りが一気に旅の気分を高めてくれる。",
+      "durationInFrames": 155,
+      "asset": {
+        "kind": "image",
+        "src": "https://source.unsplash.com/featured/1080x1920/?lisbon%20%E3%81%AE%20morning%20market%20%E3%81%A8%20cobblestone%20%E3%81%AE%20alley",
+        "motion": "zoom-in"
+      },
+      "captions": [
+        {
+          "startMs": 0,
+          "endMs": 2127,
+          "text": "石畳の路地を歩いていると、リスボンの朝は静かなのに色が濃い。"
+        },
+        {
+          "startMs": 2127,
+          "endMs": 5176,
+          "text": "少し進むだけで市場の活気が見えてきて、果物やパンの香りが一気に旅の気分を高めてくれる。"
+        }
+      ]
+    },
+    {
+      "id": "scene-2",
+      "title": "リスボンの朝市と石畳の路地",
+      "overlayText": "有名な観光地だけではなく、こういう日常の風景こそその街らしさがよく伝わる。",
+      "durationInFrames": 79,
+      "asset": {
+        "kind": "image",
+        "src": "https://source.unsplash.com/featured/1080x1920/?cobblestone%20%E3%81%AE%20alley%20%E3%82%92%E6%AD%A9%E3%81%84%E3%81%A6%E3%81%84%E3%82%8B%E3%81%A8%20lisbon%20%E3%81%AE%E6%9C%9D%E3%81%AF%E9%9D%99%E3%81%8B%E3%81%AA%E3%81%AE%E3%81%AB%E8%89%B2%E3%81%8C%E6%BF%83%E3%81%84",
+        "motion": "pan-right"
+      },
+      "captions": [
+        {
+          "startMs": 5176,
+          "endMs": 7800,
+          "text": "有名な観光地だけではなく、こういう日常の風景こそその街らしさがよく伝わる。"
+        }
+      ]
+    },
+    {
+      "id": "scene-3",
+      "title": "リスボンの朝市と石畳の路地",
+      "overlayText": "リスボンの朝市と石畳の路地",
+      "durationInFrames": 90,
+      "asset": {
+        "kind": "image",
+        "src": "https://source.unsplash.com/featured/1080x1920/?%E5%B0%91%E3%81%97%E9%80%B2%E3%82%80%E3%81%A0%E3%81%91%E3%81%A7%20market%20%E3%81%AE%E6%B4%BB%E6%B0%97%E3%81%8C%E8%A6%8B%E3%81%88%E3%81%A6%E3%81%8D%E3%81%A6%20fruit%20stall%20%E3%82%84%20bread%20%E3%81%AE%E9%A6%99%E3%82%8A%E3%81%8C%E4%B8%80%E6%B0%97%E3%81%AB%20travel%20%E3%81%AE%E6%B0%97%E5%88%86%E3%82%92%E9%AB%98%E3%82%81%E3%81%A6%E3%81%8F%E3%82%8C%E3%82%8B",
+        "motion": "zoom-out"
+      },
+      "captions": []
+    },
+    {
+      "id": "scene-4",
+      "title": "リスボンの朝市と石畳の路地",
+      "overlayText": "リスボンの朝市と石畳の路地",
+      "durationInFrames": 90,
+      "asset": {
+        "kind": "image",
+        "src": "https://source.unsplash.com/featured/1080x1920/?%E6%9C%89%E5%90%8D%E3%81%AA%20landmark%20%E3%81%A0%E3%81%91%E3%81%A7%E3%81%AF%E3%81%AA%E3%81%8F%20%E3%81%93%E3%81%86%E3%81%84%E3%81%86%20daily%20life%20%E3%81%AE%20street%20view%20%E3%81%93%E3%81%9D%E3%81%9D%E3%81%AE%E8%A1%97%E3%82%89%E3%81%97%E3%81%95%E3%81%8C%E3%82%88%E3%81%8F%E4%BC%9D%E3%82%8F%E3%82%8B",
+        "motion": "pan-left"
+      },
+      "captions": []
+    }
+  ]
+}

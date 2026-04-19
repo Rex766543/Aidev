@@ -1,0 +1,38 @@
+{
+  "assetMode": "images-only",
+  "blocks": [
+    {
+      "id": "block-01",
+      "images": [
+        {
+          "filePath": "/Users/ishikawaryuusuke/Desktop/aidev/VideoCreator/projects/2026-03-24_travel-short/input/web-images/block-01-iran-persia-ancient-01.jpg",
+          "fileName": "block-01-iran-persia-ancient-01.jpg",
+          "sourceUrl": "https://live.staticflickr.com/3248/2873357292_42781a680f.jpg",
+          "title": "Maze"
+        }
+      ]
+    },
+    {
+      "id": "block-02",
+      "images": [
+        {
+          "filePath": "/Users/ishikawaryuusuke/Desktop/aidev/VideoCreator/projects/2026-03-24_travel-short/input/web-images/block-02-iran-persia-history-01.jpg",
+          "fileName": "block-02-iran-persia-history-01.jpg",
+          "sourceUrl": "https://live.staticflickr.com/3194/2935109349_23def4a48c.jpg",
+          "title": "Persia; Older Than History"
+        }
+      ]
+    },
+    {
+      "id": "block-03",
+      "images": [
+        {
+          "filePath": "/Users/ishikawaryuusuke/Desktop/aidev/VideoCreator/projects/2026-03-24_travel-short/input/web-images/block-03-iran-persia-ancient-01.jpg",
+          "fileName": "block-03-iran-persia-ancient-01.jpg",
+          "sourceUrl": "https://live.staticflickr.com/3351/4615488322_c464392912_b.jpg",
+          "title": "Xerxes tomb at Naqsh-e Rostam"
+        }
+      ]
+    }
+  ]
+}

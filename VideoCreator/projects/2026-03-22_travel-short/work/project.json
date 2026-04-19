@@ -1,0 +1,30 @@
+{
+  "theme": "travel short",
+  "fps": 30,
+  "width": 1080,
+  "height": 1920,
+  "audioMode": "generated-audio",
+  "narrationSrc": "",
+  "bgmSrc": "",
+  "bgmVolume": 0.18,
+  "scenes": [
+    {
+      "id": "scene-1",
+      "title": "Intro",
+      "overlayText": "ここに演出テキストを入れる",
+      "durationInFrames": 120,
+      "asset": {
+        "kind": "image",
+        "src": "https://example.com/image.jpg",
+        "motion": "zoom-in"
+      },
+      "captions": [
+        {
+          "startMs": 0,
+          "endMs": 1600,
+          "text": "ここに字幕テキストを入れる"
+        }
+      ]
+    }
+  ]
+}

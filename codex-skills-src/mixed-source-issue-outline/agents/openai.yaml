@@ -1,0 +1,3 @@
+interface:
+  display_name: "Mixed Source Issue Outline"
+  short_description: "Transcribe audio and combine it with text files"

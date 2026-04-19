@@ -10,6 +10,11 @@
 # Large local reference file
 sao-novel/references/1023.pdf
 
+# Node.js
+node_modules/
+.env
+.env.local
+
 # Generated local artifacts
 murder-mystery/pdf/
 presentations/*.pptx

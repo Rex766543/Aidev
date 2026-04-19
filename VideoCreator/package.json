@@ -1,0 +1,31 @@
+{
+  "name": "video-creator",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts TravelShort",
+    "render:session": "node scripts/render-session.js",
+    "init:session": "node scripts/init-session.js",
+    "build:project": "node scripts/build-project.js",
+    "audio:trim-silence": "node scripts/trim-silence.js",
+    "audio:tts": "node scripts/generate-elevenlabs-audio.js",
+    "extract:subtitles": "node scripts/extract-subtitles.js",
+    "collect:web-images": "node scripts/collect-web-images.js",
+    "prepare:session": "node scripts/prepare-session.js"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "4.0.280",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@remotion/cli": "4.0.280",
+    "@types/node": "^22.13.10",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "typescript": "^5.8.2"
+  }
+}

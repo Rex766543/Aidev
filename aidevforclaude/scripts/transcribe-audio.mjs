@@ -17,13 +17,14 @@ const supportedExtensions = new Set([
 
 function printUsage() {
   console.log(`Usage:
-  npm run transcribe -- <audio-file> [--out <output-file>] [--model <model>] [--language <code>] [--json]
+  npm run transcribe -- <audio-file> [--out <output-file>] [--model <model>] [--language <code>] [--json] [--segments]
 
 Examples:
   npm run transcribe -- ./audio/interview.m4a
   npm run transcribe -- ./audio/interview.m4a --language ja
   npm run transcribe -- ./audio/interview.m4a --out ./transcripts/interview.txt
-  npm run transcribe -- ./audio/interview.m4a --json`);
+  npm run transcribe -- ./audio/interview.m4a --json
+  npm run transcribe -- ./audio/interview.m4a --segments   # outputs [{startMs, endMs, text}, ...]`);
 }
 
 function parseArgs(argv) {
@@ -61,6 +62,11 @@ function parseArgs(argv) {
 
     if (token === "--json") {
       options.json = true;
+      continue;
+    }
+
+    if (token === "--segments") {
+      options.segments = true;
       continue;
     }
 
@@ -117,8 +123,8 @@ async function resolveApiKey() {
   return process.env.OPENAI_API_KEY;
 }
 
-function getDefaultOutputPath(inputPath, json) {
-  const extension = json ? ".json" : ".txt";
+function getDefaultOutputPath(inputPath, { json = false, segments = false } = {}) {
+  const extension = json || segments ? ".json" : ".txt";
   const fileName = `${path.basename(inputPath, path.extname(inputPath))}${extension}`;
   return path.join(defaultOutputDir, fileName);
 }
@@ -137,7 +143,7 @@ async function ensureAudioFile(inputPath) {
   }
 }
 
-async function transcribe({ apiKey, inputPath, model, language }) {
+async function transcribe({ apiKey, inputPath, model, language, segments }) {
   const formData = new FormData();
   const audioBuffer = await readFile(inputPath);
   const audioFile = new File([audioBuffer], path.basename(inputPath), {
@@ -148,6 +154,10 @@ async function transcribe({ apiKey, inputPath, model, language }) {
   formData.append("model", model);
   if (language) {
     formData.append("language", language);
+  }
+  if (segments) {
+    formData.append("response_format", "verbose_json");
+    formData.append("timestamp_granularities[]", "segment");
   }
 
   const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
@@ -183,7 +193,7 @@ async function main() {
 
   const outputPath = path.resolve(
     projectRoot,
-    options.outputPath || getDefaultOutputPath(inputPath, options.json)
+    options.outputPath || getDefaultOutputPath(inputPath, { json: options.json, segments: options.segments })
   );
 
   await mkdir(path.dirname(outputPath), { recursive: true });
@@ -197,16 +207,28 @@ async function main() {
     inputPath,
     model: options.model,
     language: options.language,
+    segments: options.segments,
   });
 
-  const serialized = options.json
-    ? JSON.stringify(result, null, 2)
-    : `${result.text?.trim() || ""}\n`;
+  let serialized;
+  if (options.segments) {
+    // Output segment-level timestamps as a JSON array of {startMs, endMs, text}
+    const segments = (result.segments ?? []).map((seg) => ({
+      startMs: Math.round(seg.start * 1000),
+      endMs: Math.round(seg.end * 1000),
+      text: seg.text?.trim() || "",
+    }));
+    serialized = JSON.stringify(segments, null, 2);
+  } else if (options.json) {
+    serialized = JSON.stringify(result, null, 2);
+  } else {
+    serialized = `${result.text?.trim() || ""}\n`;
+  }
 
   await writeFile(outputPath, serialized, "utf8");
 
   console.error(`Saved transcript to ${path.relative(projectRoot, outputPath)}`);
-  if (!options.json && result.text) {
+  if (!options.json && !options.segments && result.text) {
     console.log(result.text.trim());
   }
 }
