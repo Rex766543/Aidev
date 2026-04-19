@@ -15,6 +15,11 @@ node_modules/
 .env
 .env.local
 
+# Large binary / generated outputs
+VideoCreator/projects/*/output/*.mp4
+VideoCreator/public/sessions/*/audio/*.mp3
+VideoCreator/projects/*/input/source-audio/*.mp3
+
 # Generated local artifacts
 murder-mystery/pdf/
 presentations/*.pptx
