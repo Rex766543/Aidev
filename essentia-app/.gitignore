@@ -1,0 +1,12 @@
+.env
+.env.local
+__pycache__/
+*.pyc
+.next/
+node_modules/
+# Essentia ML モデルバイナリ（download_models.sh で取得）
+models/*.pb
+models/*.json
+# ただし manifest と README は追跡対象
+!models/model_manifest.json
+!models/README.md

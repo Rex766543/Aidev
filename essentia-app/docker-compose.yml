@@ -1,0 +1,90 @@
+version: "3.9"
+
+services:
+  # ─────────────────────────────────────────
+  # Backend: FastAPI + Essentia
+  # ─────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./models:/app/models:ro   # モデルファイルは読み取り専用でマウント
+    environment:
+      - APP_ENV=${APP_ENV:-development}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@db:5432/essentia}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+      - MODELS_DIR=/app/models
+      - ESSENTIA_MODEL_PB=${ESSENTIA_MODEL_PB:-discogs-effnet-bs64-1.pb}
+      - ESSENTIA_MODEL_JSON=${ESSENTIA_MODEL_JSON:-discogs-effnet-bs64-1.json}
+      - ESSENTIA_MODEL_NAME=${ESSENTIA_MODEL_NAME:-discogs-effnet}
+      - ESSENTIA_MODEL_VERSION=${ESSENTIA_MODEL_VERSION:-bs64-1}
+      - MAX_AUDIO_SECONDS=${MAX_AUDIO_SECONDS:-20}
+      - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
+      - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────
+  # Frontend: Next.js
+  # ─────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+      # SSR からは Docker 内部ネットワーク経由で backend に接続
+      - INTERNAL_API_URL=http://backend:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────
+  # Database: Postgres (local dev)
+  # 本番は Supabase に差し替え
+  # ─────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: essentia
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # migrations/ 配下を番号順に自動実行 (docker-entrypoint-initdb.d は初回起動時のみ)
+      - ./db/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────
+  # Adminer: DB ブラウザ UI（開発用）
+  # http://localhost:8080 でアクセス
+  # ─────────────────────────────────────────
+  adminer:
+    image: adminer:4
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

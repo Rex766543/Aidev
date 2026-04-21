@@ -1,0 +1,19 @@
+def test_health(client):
+    resp = client.get("/health")
+    assert resp.status_code == 200
+    assert resp.json() == {"status": "ok"}
+
+
+def test_root(client):
+    resp = client.get("/")
+    assert resp.status_code == 200
+    assert "message" in resp.json()
+
+
+def test_essentia_status(client):
+    resp = client.get("/essentia/status")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "status" in data
+    assert data["status"] in ("ok", "degraded")
+    assert "inference_ready" in data

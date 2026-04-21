@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Spotify × Vercel dark palette ─── */
+:root {
+  --bg-base:     #121212;   /* Spotify: deepest surface */
+  --bg-surface:  #181818;   /* Spotify: cards / containers */
+  --bg-elevated: #1f1f1f;   /* Spotify: interactive surfaces */
+  --bg-hover:    #272727;   /* Spotify: hover state */
+  --text-base:   #ffffff;
+  --text-muted:  #b3b3b3;   /* Spotify silver */
+  --text-faint:  #727272;
+  --accent:      #e6e6fa;   /* Lavender: buttons / text accent */
+  --accent-mid:  #c4b5fd;   /* Lavender: spinners / bars */
+  --accent-dark: #d0d0f0;   /* Lavender hover */
+  --error:       #f3727f;   /* Spotify negative */
+  --record:      #e11d48;   /* rose-600 — recording red */
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-base);
+  font-family: system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Spotify-style scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: #4d4d4d; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #7c7c7c; }
+
+/* Vercel shadow-as-border for select elements on dark bg */
+select option { background-color: var(--bg-elevated); color: var(--text-base); }

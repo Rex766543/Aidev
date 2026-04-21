@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>You Music — テスト画面</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #0a0a0a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .phone { width: 390px; height: 844px; overflow-y: auto; }
+    .nav-tab { cursor: pointer; padding: 8px 18px; border-radius: 999px; font-size: 13px; font-weight: 600; transition: all 0.15s; }
+    .nav-tab.active { background: #e6e6fa; color: #000; }
+    .nav-tab:not(.active) { color: #b3b3b3; }
+    .nav-tab:not(.active):hover { color: #fff; }
+    .bar-fill { transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+    select option { background: #1f1f1f; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #1a1a1a; }
+    ::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 2px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner { animation: spin 0.8s linear infinite; }
+    @keyframes pulse-ring {
+      0% { transform: scale(1); opacity: 0.6; }
+      100% { transform: scale(1.8); opacity: 0; }
+    }
+    .record-pulse::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: #f3727f;
+      animation: pulse-ring 1.2s ease-out infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-8 gap-6">
+
+  <!-- ナビ -->
+  <div class="flex items-center gap-2 bg-[#181818] border border-[#282828] rounded-full px-2 py-1.5 shadow-lg">
+    <button class="nav-tab active" onclick="showScreen('home')">トップ</button>
+    <button class="nav-tab" onclick="showScreen('record')">録音</button>
+    <button class="nav-tab" onclick="showScreen('result')">結果</button>
+    <button class="nav-tab" onclick="showScreen('history')">履歴</button>
+  </div>
+
+  <!-- スクリーン -->
+  <div class="phone bg-[#121212] rounded-3xl border border-[#282828] shadow-2xl overflow-hidden relative" id="screen-container">
+
+    <!-- ========== TOP BAR ========== -->
+    <div class="sticky top-0 z-10 h-14 flex items-center justify-center bg-[#121212]/90 backdrop-blur border-b border-[#1a1a1a]">
+      <span class="text-white font-bold text-sm tracking-wide">You Music</span>
+    </div>
+
+    <!-- ========== HOME ========== -->
+    <div id="screen-home" class="flex flex-col px-4 pt-8 pb-10 min-h-[calc(844px-56px)]">
+      <div class="text-center mb-8">
+        <h1 class="text-2xl font-bold text-white">You Music</h1>
+        <p class="text-[#b3b3b3] text-sm mt-1">曲を選んで、録音からスタイルを推定</p>
+      </div>
+
+      <!-- 検索 -->
+      <div class="max-w-xl mx-auto w-full space-y-3">
+        <div class="relative">
+          <input
+            id="search-input"
+            type="text"
+            placeholder="アーティスト名・曲名を検索"
+            class="w-full bg-[#1f1f1f] text-white rounded-full px-4 py-3 pl-10 text-sm focus:outline-none shadow-[rgb(80,80,80)_0px_0px_0px_1px_inset] focus:shadow-[#ffffff_0px_0px_0px_1px_inset] placeholder-[#727272]"
+            oninput="filterTracks(this.value)"
+            onfocus="showSearchResults()"
+          />
+          <svg class="absolute left-3 top-3.5 w-4 h-4 text-[#727272]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+          </svg>
+        </div>
+
+        <!-- 検索結果 -->
+        <div id="search-results" class="hidden bg-[#1f1f1f] rounded-xl divide-y divide-[#282828] shadow-2xl overflow-hidden">
+          <!-- items injected by JS -->
+        </div>
+      </div>
+
+      <!-- 選択済みカード -->
+      <div id="selected-track-card" class="hidden mt-6 max-w-xl mx-auto w-full space-y-3">
+        <div class="flex items-center gap-3 p-3 rounded-xl bg-[#1f1f1f] shadow-[rgba(0,0,0,0.5)_0px_0px_0px_1px,rgba(0,0,0,0.3)_0px_8px_8px]">
+          <img id="selected-artwork" src="" alt="" class="w-14 h-14 object-cover rounded-lg flex-shrink-0" />
+          <div class="flex-1 min-w-0">
+            <p id="selected-title" class="font-semibold text-sm truncate text-white"></p>
+            <p id="selected-artist" class="text-[#b3b3b3] text-xs truncate"></p>
+          </div>
+          <span class="text-[#e6e6fa] text-lg flex-shrink-0">✓</span>
+        </div>
+        <button
+          class="w-full py-4 bg-[#e6e6fa] text-black rounded-full font-bold text-base hover:bg-[#d0d0f0] active:scale-95 transition-transform shadow-[rgba(0,0,0,0.5)_0px_8px_24px]"
+          onclick="showScreen('record')"
+        >
+          この曲を録音して解析
+        </button>
+      </div>
+
+      <!-- 履歴リンク -->
+      <div class="flex-1 flex items-end justify-center pt-10">
+        <button class="text-[#727272] text-sm hover:text-[#b3b3b3] transition-colors" onclick="showScreen('history')">
+          履歴を見る
+        </button>
+      </div>
+    </div>
+
+    <!-- ========== RECORD ========== -->
+    <div id="screen-record" class="hidden flex flex-col min-h-[calc(844px-56px)]">
+      <!-- 曲ヘッダ -->
+      <div class="px-4 py-3 border-b border-[#282828] bg-[#181818]">
+        <div class="max-w-sm mx-auto flex items-center gap-3">
+          <img src="https://i.scdn.co/image/ab67616d0000b273b5f3fe0de3e49cd6e7e88b62" alt="" class="w-10 h-10 rounded object-cover flex-shrink-0" />
+          <div class="min-w-0">
+            <p class="font-medium text-sm truncate text-white">Bohemian Rhapsody</p>
+            <p class="text-[#b3b3b3] text-xs truncate">Queen</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 録音UI -->
+      <div class="flex-1 flex flex-col items-center justify-center px-4 py-6 gap-6">
+        <!-- タイマー -->
+        <div id="record-timer" class="hidden text-[#f3727f] text-2xl font-mono font-bold tabular-nums">0:00</div>
+
+        <!-- 波形プレースホルダ -->
+        <div id="waveform" class="hidden w-full max-w-xs h-14 rounded-lg bg-[#181818] flex items-center justify-center gap-1 px-4 overflow-hidden">
+          <!-- bars generated by JS -->
+        </div>
+
+        <!-- 録音ボタン -->
+        <div class="relative" onclick="toggleRecord()">
+          <div id="record-btn" class="w-24 h-24 rounded-full bg-[#f3727f] flex items-center justify-center cursor-pointer hover:bg-[#e06070] active:scale-95 transition-all shadow-[rgba(243,114,127,0.4)_0px_8px_32px]">
+            <svg id="record-icon-mic" class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+              <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+            </svg>
+            <svg id="record-icon-stop" class="hidden w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <rect x="6" y="6" width="12" height="12" rx="2"/>
+            </svg>
+          </div>
+        </div>
+
+        <div id="record-hint" class="text-center">
+          <p class="text-[#b3b3b3] text-sm">タップして録音開始</p>
+          <p class="text-[#727272] text-xs mt-1">5〜20秒録音してください</p>
+        </div>
+
+        <!-- 解析中スピナー -->
+        <div id="analyzing-state" class="hidden text-center space-y-3">
+          <div class="w-10 h-10 border-4 border-[#c4b5fd] border-t-transparent rounded-full spinner mx-auto"></div>
+          <p class="text-[#b3b3b3]">解析中...</p>
+          <p class="text-[#727272] text-xs">初回は少し時間がかかることがあります</p>
+        </div>
+      </div>
+
+      <div class="text-center pb-8">
+        <button class="text-[#727272] text-sm hover:text-[#b3b3b3] transition-colors" onclick="showScreen('home')">キャンセル</button>
+      </div>
+    </div>
+
+    <!-- ========== RESULT ========== -->
+    <div id="screen-result" class="hidden p-6 space-y-8 max-w-lg mx-auto">
+      <div class="text-center">
+        <h1 class="text-xl font-bold text-white">解析結果</h1>
+      </div>
+
+      <!-- StyleResultCard -->
+      <div class="w-full max-w-sm mx-auto space-y-5">
+        <div class="text-center">
+          <p class="text-xs text-[#727272] uppercase tracking-widest">Rock</p>
+          <h2 class="text-4xl font-bold mt-1 text-white">Classic Rock</h2>
+        </div>
+
+        <div class="space-y-3">
+          <!-- rank 1 -->
+          <div class="flex items-center gap-3">
+            <span class="text-xs w-5 text-center font-bold text-yellow-400">1</span>
+            <div class="flex-1">
+              <div class="flex justify-between text-sm mb-1">
+                <span class="font-medium text-white">Classic Rock <span class="text-[#727272] text-xs font-normal ml-1.5">Rock</span></span>
+                <span class="text-[#b3b3b3] text-xs">72.4%</span>
+              </div>
+              <div class="w-full bg-[#282828] rounded-full h-2">
+                <div class="h-2 rounded-full bg-[#c4b5fd] bar-fill" style="width:72.4%"></div>
+              </div>
+            </div>
+          </div>
+          <!-- rank 2 -->
+          <div class="flex items-center gap-3">
+            <span class="text-xs w-5 text-center font-bold text-[#727272]">2</span>
+            <div class="flex-1">
+              <div class="flex justify-between text-sm mb-1">
+                <span class="font-medium text-white">Progressive Rock <span class="text-[#727272] text-xs font-normal ml-1.5">Rock</span></span>
+                <span class="text-[#b3b3b3] text-xs">18.1%</span>
+              </div>
+              <div class="w-full bg-[#282828] rounded-full h-2">
+                <div class="h-2 rounded-full bg-[#c4b5fd]/40 bar-fill" style="width:18.1%"></div>
+              </div>
+            </div>
+          </div>
+          <!-- rank 3 -->
+          <div class="flex items-center gap-3">
+            <span class="text-xs w-5 text-center font-bold text-[#727272]">3</span>
+            <div class="flex-1">
+              <div class="flex justify-between text-sm mb-1">
+                <span class="font-medium text-white">Hard Rock <span class="text-[#727272] text-xs font-normal ml-1.5">Rock</span></span>
+                <span class="text-[#b3b3b3] text-xs">5.3%</span>
+              </div>
+              <div class="w-full bg-[#282828] rounded-full h-2">
+                <div class="h-2 rounded-full bg-[#c4b5fd]/40 bar-fill" style="width:5.3%"></div>
+              </div>
+            </div>
+          </div>
+          <!-- 詳細トグル -->
+          <button id="toggle-rest" class="text-sm text-[#727272] hover:text-[#b3b3b3] transition-colors w-full text-center" onclick="toggleRest()">詳細を見る（残り 7 件）</button>
+          <div id="rest-items" class="hidden mt-3 space-y-2">
+            <div class="flex items-center gap-3"><span class="text-xs w-5 text-center text-[#4d4d4d]">4</span><div class="flex-1"><div class="flex justify-between text-xs mb-0.5 text-[#b3b3b3]"><span>Arena Rock <span class="text-[#727272] ml-1">Rock</span></span><span>2.1%</span></div><div class="w-full bg-[#282828] rounded-full h-1"><div class="bg-[#4d4d4d] h-1 rounded-full bar-fill" style="width:2.1%"></div></div></div></div>
+            <div class="flex items-center gap-3"><span class="text-xs w-5 text-center text-[#4d4d4d]">5</span><div class="flex-1"><div class="flex justify-between text-xs mb-0.5 text-[#b3b3b3]"><span>Glam Rock <span class="text-[#727272] ml-1">Rock</span></span><span>0.9%</span></div><div class="w-full bg-[#282828] rounded-full h-1"><div class="bg-[#4d4d4d] h-1 rounded-full bar-fill" style="width:0.9%"></div></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="border-[#282828]" />
+
+      <!-- CorrectionPicker -->
+      <div id="correction-area" class="w-full max-w-sm mx-auto space-y-4">
+        <p class="text-sm text-[#b3b3b3] text-center">
+          推定結果が違う場合は正しいスタイルを選んでください<br/>
+          <span class="text-xs text-[#727272]">現在の推定: Classic Rock</span>
+        </p>
+        <!-- クイック選択 -->
+        <div>
+          <p class="text-xs text-[#727272] mb-2">AI の推定結果から選ぶ</p>
+          <div class="flex flex-wrap gap-2" id="quick-pick"></div>
+        </div>
+        <!-- ジャンル選択 -->
+        <div>
+          <p class="text-xs text-[#727272] mb-2">ジャンルから選ぶ</p>
+          <select class="w-full rounded-lg px-3 py-2 text-sm focus:outline-none bg-[#1f1f1f] text-white shadow-[rgb(124,124,124)_0px_0px_0px_1px_inset] focus:shadow-[#ffffff_0px_0px_0px_1px_inset]" onchange="filterGenreStyles(this.value)">
+            <option value="">ジャンルを選択...</option>
+            <option>Rock</option><option>Electronic</option><option>Jazz</option>
+            <option>Hip-Hop</option><option>Classical</option><option>R&B</option>
+          </select>
+          <div id="genre-style-list" class="hidden mt-2 max-h-48 overflow-y-auto bg-[#181818] border border-[#282828] rounded-lg divide-y divide-[#282828]"></div>
+        </div>
+        <!-- 選択プレビュー -->
+        <div id="correction-preview" class="hidden bg-[#1f1f1f] rounded-lg px-3 py-2 text-sm text-center shadow-[rgba(0,0,0,0.3)_0px_0px_0px_1px_inset]">
+          <span id="correction-preview-text" class="font-medium text-[#e6e6fa]"></span>
+        </div>
+        <button id="save-correction-btn" class="w-full py-2.5 bg-[#e6e6fa] text-black rounded-full text-sm font-bold opacity-40" onclick="saveCorrection()" disabled>補正を保存</button>
+        <!-- 保存済み -->
+        <div id="correction-saved" class="hidden text-center space-y-1">
+          <p class="text-[#e6e6fa] text-sm font-medium">補正を保存しました</p>
+          <p class="text-[#b3b3b3] text-xs">Progressive Rock <span class="text-[#727272] ml-1">(Rock)</span></p>
+        </div>
+      </div>
+
+      <div class="flex flex-col items-center gap-3 pt-2">
+        <button class="w-full max-w-xs py-3 bg-[#1f1f1f] text-white rounded-full font-semibold text-center hover:bg-[#272727] active:scale-95 transition-transform shadow-[rgba(0,0,0,0.3)_0px_0px_0px_1px_inset]" onclick="showScreen('record')">録音し直す</button>
+        <div class="flex gap-6 text-sm">
+          <button class="text-[#e6e6fa] hover:underline" onclick="showScreen('home')">トップへ戻る</button>
+          <button class="text-[#727272] hover:text-[#b3b3b3] transition-colors" onclick="showScreen('history')">履歴を見る</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== HISTORY ========== -->
+    <div id="screen-history" class="hidden p-4 space-y-5 max-w-lg mx-auto">
+      <div class="flex items-center justify-between">
+        <h1 class="text-xl font-bold text-white">解析履歴</h1>
+        <button class="text-[#e6e6fa] text-sm hover:underline" onclick="showScreen('home')">トップへ</button>
+      </div>
+      <ul class="divide-y divide-[#282828]" id="history-list"></ul>
+    </div>
+
+  </div>
+
+  <!-- ラベル -->
+  <p class="text-[#4d4d4d] text-xs">essentia-app UI モック — バックエンド不要</p>
+
+<script>
+// ===== データ =====
+const MOCK_TRACKS = [
+  { id: "1", title: "Bohemian Rhapsody", artist: "Queen", artwork: "https://i.scdn.co/image/ab67616d0000b273b5f3fe0de3e49cd6e7e88b62" },
+  { id: "2", title: "Hotel California", artist: "Eagles", artwork: "https://i.scdn.co/image/ab67616d0000b273f10cc30b94b1e46e8fe77ba6" },
+  { id: "3", title: "Stairway to Heaven", artist: "Led Zeppelin", artwork: "https://i.scdn.co/image/ab67616d0000b2737359994525d219f64872d3b1" },
+  { id: "4", title: "Smells Like Teen Spirit", artist: "Nirvana", artwork: "https://i.scdn.co/image/ab67616d0000b273e175a19e530c898d167d39bf" },
+  { id: "5", title: "Lose Yourself", artist: "Eminem", artwork: "https://i.scdn.co/image/ab67616d0000b273ea7caaff71dea1051d49b2fe" },
+  { id: "6", title: "Billie Jean", artist: "Michael Jackson", artwork: "https://i.scdn.co/image/ab67616d0000b273de437d960dda1ac0a3586d97" },
+];
+
+const GENRE_STYLES = {
+  Rock: ["Classic Rock","Hard Rock","Progressive Rock","Arena Rock","Glam Rock","Indie Rock","Alternative Rock"],
+  Electronic: ["House","Techno","Trance","Drum and Bass","Ambient","Electro","Dubstep"],
+  Jazz: ["Bebop","Swing","Fusion","Cool Jazz","Modal Jazz"],
+  "Hip-Hop": ["Boom Bap","Trap","Lo-fi","G-Funk","Conscious Hip-Hop"],
+  Classical: ["Baroque","Romantic","Contemporary","Chamber Music"],
+  "R&B": ["Soul","Funk","Neo Soul","Contemporary R&B"],
+};
+
+const MOCK_HISTORY = [
+  { id: "a1", title: "Bohemian Rhapsody", artist: "Queen", artwork: "https://i.scdn.co/image/ab67616d0000b273b5f3fe0de3e49cd6e7e88b62", style: "Classic Rock", corrected: null, date: "2026/04/17" },
+  { id: "a2", title: "Hotel California", artist: "Eagles", artwork: "https://i.scdn.co/image/ab67616d0000b273f10cc30b94b1e46e8fe77ba6", style: "Country Rock", corrected: "Classic Rock", date: "2026/04/16" },
+  { id: "a3", title: "Billie Jean", artist: "Michael Jackson", artwork: "https://i.scdn.co/image/ab67616d0000b273de437d960dda1ac0a3586d97", style: "Funk", corrected: null, date: "2026/04/15" },
+];
+
+const QUICK_STYLES = [
+  { style: "Classic Rock", genre: "Rock", score: 72.4 },
+  { style: "Progressive Rock", genre: "Rock", score: 18.1 },
+  { style: "Hard Rock", genre: "Rock", score: 5.3 },
+];
+
+// ===== 状態 =====
+let recording = false;
+let timerInterval = null;
+let elapsed = 0;
+let selectedCorrection = null;
+
+// ===== 画面切り替え =====
+function showScreen(name) {
+  ["home","record","result","history"].forEach(s => {
+    document.getElementById("screen-"+s).classList.add("hidden");
+  });
+  document.getElementById("screen-"+name).classList.remove("hidden");
+  // ナビ更新
+  document.querySelectorAll(".nav-tab").forEach((el, i) => {
+    const names = ["home","record","result","history"];
+    el.classList.toggle("active", names[i] === name);
+  });
+  // 画面初期化
+  if (name === "record") initRecord();
+  if (name === "result") initResult();
+  if (name === "history") renderHistory();
+  document.getElementById("screen-container").scrollTop = 0;
+}
+
+// ===== 検索 =====
+function filterTracks(query) {
+  const q = query.toLowerCase();
+  const results = q.length < 1 ? MOCK_TRACKS : MOCK_TRACKS.filter(t =>
+    t.title.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q)
+  );
+  const el = document.getElementById("search-results");
+  el.innerHTML = results.map(t => `
+    <button class="flex items-center gap-3 px-4 py-3 w-full text-left hover:bg-[#272727] transition-colors"
+      onclick='selectTrack(${JSON.stringify(t)})'>
+      <img src="${t.artwork}" class="w-10 h-10 rounded object-cover flex-shrink-0"/>
+      <div class="min-w-0">
+        <p class="font-medium text-sm truncate text-white">${t.title}</p>
+        <p class="text-[#b3b3b3] text-xs truncate">${t.artist}</p>
+      </div>
+    </button>
+  `).join("");
+  el.classList.toggle("hidden", results.length === 0 && query.length === 0);
+}
+
+function showSearchResults() {
+  filterTracks(document.getElementById("search-input").value || "");
+}
+
+function selectTrack(t) {
+  document.getElementById("search-results").classList.add("hidden");
+  document.getElementById("search-input").value = t.title;
+  document.getElementById("selected-artwork").src = t.artwork;
+  document.getElementById("selected-title").textContent = t.title;
+  document.getElementById("selected-artist").textContent = t.artist;
+  document.getElementById("selected-track-card").classList.remove("hidden");
+}
+
+// ===== 録音 =====
+function initRecord() {
+  recording = false;
+  elapsed = 0;
+  clearInterval(timerInterval);
+  document.getElementById("record-icon-mic").classList.remove("hidden");
+  document.getElementById("record-icon-stop").classList.add("hidden");
+  document.getElementById("record-timer").classList.add("hidden");
+  document.getElementById("waveform").classList.add("hidden");
+  document.getElementById("record-hint").classList.remove("hidden");
+  document.getElementById("analyzing-state").classList.add("hidden");
+  document.getElementById("record-btn").classList.remove("bg-[#282828]");
+  document.getElementById("record-btn").classList.add("bg-[#f3727f]");
+}
+
+function toggleRecord() {
+  if (document.getElementById("analyzing-state").classList.contains("hidden") === false) return;
+  recording = !recording;
+  if (recording) {
+    // 録音開始
+    document.getElementById("record-icon-mic").classList.add("hidden");
+    document.getElementById("record-icon-stop").classList.remove("hidden");
+    document.getElementById("record-hint").classList.add("hidden");
+    document.getElementById("record-timer").classList.remove("hidden");
+    document.getElementById("waveform").classList.remove("hidden");
+    renderWaveform();
+    elapsed = 0;
+    timerInterval = setInterval(() => {
+      elapsed++;
+      const m = Math.floor(elapsed / 60);
+      const s = elapsed % 60;
+      document.getElementById("record-timer").textContent = `${m}:${String(s).padStart(2,'0')}`;
+      // 波形アニメ
+      renderWaveform();
+      // 20秒で自動停止
+      if (elapsed >= 20) stopAndAnalyze();
+    }, 1000);
+  } else {
+    if (elapsed >= 5) stopAndAnalyze();
+    else {
+      // 5秒未満は警告なしでリセット
+      initRecord();
+      document.getElementById("record-hint").innerHTML = '<p class="text-[#f3727f] text-sm">5秒以上録音してください</p>';
+      document.getElementById("record-hint").classList.remove("hidden");
+    }
+  }
+}
+
+function renderWaveform() {
+  const wf = document.getElementById("waveform");
+  wf.innerHTML = Array.from({length: 32}, () => {
+    const h = Math.random() * 36 + 4;
+    return `<div style="width:4px;height:${h}px;border-radius:2px;background:#c4b5fd;opacity:${0.3 + Math.random()*0.7};flex-shrink:0"></div>`;
+  }).join("");
+  wf.style.display = "flex";
+  wf.style.alignItems = "center";
+}
+
+function stopAndAnalyze() {
+  clearInterval(timerInterval);
+  recording = false;
+  document.getElementById("record-icon-mic").classList.add("hidden");
+  document.getElementById("record-icon-stop").classList.add("hidden");
+  document.getElementById("record-timer").classList.add("hidden");
+  document.getElementById("waveform").classList.add("hidden");
+  document.getElementById("analyzing-state").classList.remove("hidden");
+  // 2秒後に結果画面へ
+  setTimeout(() => showScreen("result"), 2000);
+}
+
+// ===== 結果 =====
+function initResult() {
+  selectedCorrection = null;
+  document.getElementById("correction-preview").classList.add("hidden");
+  document.getElementById("correction-saved").classList.add("hidden");
+  document.getElementById("correction-area").classList.remove("hidden");
+  const btn = document.getElementById("save-correction-btn");
+  btn.disabled = true;
+  btn.classList.add("opacity-40");
+
+  // クイック選択
+  const qp = document.getElementById("quick-pick");
+  qp.innerHTML = QUICK_STYLES.map(s => `
+    <button id="qp-${s.style.replace(/\s/g,'_')}"
+      onclick='quickPick(${JSON.stringify(s)})'
+      class="px-3 py-1.5 rounded-full text-sm transition-colors bg-[#1f1f1f] text-[#b3b3b3] shadow-[rgba(0,0,0,0.3)_0px_0px_0px_1px_inset] hover:text-white">
+      ${s.style}<span class="ml-1 text-xs opacity-60">${s.score.toFixed(0)}%</span>
+    </button>
+  `).join("");
+
+  // ジャンルスタイルリセット
+  document.getElementById("genre-style-list").classList.add("hidden");
+}
+
+function quickPick(s) {
+  selectedCorrection = s;
+  QUICK_STYLES.forEach(q => {
+    const id = "qp-"+q.style.replace(/\s/g,'_');
+    const el = document.getElementById(id);
+    if (q.style === s.style) {
+      el.className = "px-3 py-1.5 rounded-full text-sm transition-colors bg-[#e6e6fa] text-black font-medium";
+    } else {
+      el.className = "px-3 py-1.5 rounded-full text-sm transition-colors bg-[#1f1f1f] text-[#b3b3b3] shadow-[rgba(0,0,0,0.3)_0px_0px_0px_1px_inset] hover:text-white";
+    }
+  });
+  showPreview(s.style, s.genre);
+}
+
+function filterGenreStyles(genre) {
+  const list = document.getElementById("genre-style-list");
+  if (!genre) { list.classList.add("hidden"); return; }
+  const styles = GENRE_STYLES[genre] || [];
+  list.innerHTML = styles.map(s => `
+    <button onclick='pickGenreStyle("${s}","${genre}")'
+      class="w-full text-left px-3 py-2 text-sm hover:bg-[#272727] text-[#b3b3b3] transition-colors">
+      ${s}
+    </button>
+  `).join("");
+  list.classList.remove("hidden");
+}
+
+function pickGenreStyle(style, genre) {
+  selectedCorrection = { style, genre };
+  // ジャンルリストのハイライト
+  document.querySelectorAll("#genre-style-list button").forEach(el => {
+    el.className = el.textContent.trim() === style
+      ? "w-full text-left px-3 py-2 text-sm bg-[#e6e6fa]/10 text-[#e6e6fa] font-medium transition-colors"
+      : "w-full text-left px-3 py-2 text-sm hover:bg-[#272727] text-[#b3b3b3] transition-colors";
+  });
+  showPreview(style, genre);
+}
+
+function showPreview(style, genre) {
+  document.getElementById("correction-preview-text").textContent = style + (genre ? ` (${genre})` : "");
+  document.getElementById("correction-preview").classList.remove("hidden");
+  const btn = document.getElementById("save-correction-btn");
+  btn.disabled = false;
+  btn.classList.remove("opacity-40");
+}
+
+function saveCorrection() {
+  if (!selectedCorrection) return;
+  document.getElementById("correction-area").innerHTML = `
+    <div class="text-center space-y-1">
+      <p class="text-[#e6e6fa] text-sm font-medium">補正を保存しました</p>
+      <p class="text-[#b3b3b3] text-xs">${selectedCorrection.style} <span class="text-[#727272] ml-1">(${selectedCorrection.genre})</span></p>
+    </div>
+  `;
+}
+
+function toggleRest() {
+  const rest = document.getElementById("rest-items");
+  const btn = document.getElementById("toggle-rest");
+  const hidden = rest.classList.toggle("hidden");
+  btn.textContent = hidden ? "詳細を見る（残り 7 件）" : "閉じる";
+}
+
+// ===== 履歴 =====
+function renderHistory() {
+  const list = document.getElementById("history-list");
+  list.innerHTML = MOCK_HISTORY.map(item => `
+    <li class="flex items-center gap-3 py-3">
+      <div class="flex-shrink-0">
+        <img src="${item.artwork}" alt="" class="w-9 h-9 object-cover rounded"/>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="font-medium text-sm truncate text-white">${item.title}</p>
+        <p class="text-[#727272] text-xs truncate">${item.artist}</p>
+        <p class="text-[#e6e6fa] text-xs mt-0.5">
+          ${item.corrected ?? item.style}
+          ${item.corrected ? '<span class="text-[#727272] ml-1">(補正済み)</span>' : ''}
+        </p>
+      </div>
+      <div class="flex-shrink-0 flex flex-col items-end gap-1.5">
+        <p class="text-[#4d4d4d] text-xs">${item.date}</p>
+        <button onclick="showScreen('record')" class="text-xs text-white border border-white/20 rounded-full px-2.5 py-0.5 hover:bg-white/10 active:scale-95 transition-colors whitespace-nowrap">録音し直す</button>
+      </div>
+    </li>
+  `).join("");
+}
+
+// 初期表示
+showScreen("home");
+</script>
+</body>
+</html>

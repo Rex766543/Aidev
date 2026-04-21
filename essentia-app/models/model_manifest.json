@@ -1,0 +1,46 @@
+{
+  "active_model": "discogs-effnet-v1",
+  "models": {
+    "discogs-effnet-v1": {
+      "name": "discogs-effnet",
+      "version": "bs64-1",
+      "description": "Discogs EfficientNet - 400 music styles classification (2-stage pipeline)",
+      "taxonomy": "discogs400",
+      "class_separator": "---",
+      "pipeline": [
+        {
+          "role": "embedding",
+          "file_pb": "discogs-effnet-bs64-1.pb",
+          "file_json": "discogs-effnet-bs64-1.json",
+          "download_url_pb": "https://essentia.upf.edu/models/feature-extractors/discogs-effnet/discogs-effnet-bs64-1.pb",
+          "download_url_json": "https://essentia.upf.edu/models/feature-extractors/discogs-effnet/discogs-effnet-bs64-1.json",
+          "essentia_algo": "TensorflowPredictEffnetDiscogs",
+          "output_layer": "PartitionedCall:1",
+          "note": "Extracts 1280-dim embedding vectors per audio frame"
+        },
+        {
+          "role": "classifier",
+          "file_pb": "genre_discogs400-discogs-effnet-1.pb",
+          "file_json": "genre_discogs400-discogs-effnet-1.json",
+          "download_url_pb": "https://essentia.upf.edu/models/classification-heads/genre_discogs400/genre_discogs400-discogs-effnet-1.pb",
+          "download_url_json": "https://essentia.upf.edu/models/classification-heads/genre_discogs400/genre_discogs400-discogs-effnet-1.json",
+          "essentia_algo": "TensorflowPredict2D",
+          "output_layer": "predictions",
+          "note": "Classifies embeddings into 400 Discogs styles (Sigmoid, multi-label)"
+        }
+      ],
+      "input_spec": {
+        "sample_rate": 16000,
+        "channels": "mono",
+        "resample_quality": 4,
+        "note": "MonoLoader with sampleRate=16000, resampleQuality=4"
+      },
+      "output_spec": {
+        "num_classes": 400,
+        "activation": "sigmoid",
+        "class_format": "Genre---Style (e.g. Electronic---House)",
+        "performance_roc_auc": 0.954
+      }
+    }
+  }
+}
