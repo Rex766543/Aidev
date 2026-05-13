@@ -20,6 +20,24 @@ type: skill
 - 両方が明示されたら Step 1 に進む。
 - 国は Egypt / Jordan のどちらかに対応付ける。
 - 場所は都市・街・遺跡・地区など具体的な地名であれば何でも可。
+- **場所の英語表記は `itinerary.md` の都市粒度・スペルに従う：**
+
+| 日本語表記 | ファイル内で使う英語表記 |
+|-----------|------------------------|
+| アンマン | Amman |
+| 死海 | Dead Sea |
+| マダバ | Madaba |
+| ペトラ / ワディムサ | Petra |
+| ワディラム | Wadi Rum |
+| アカバ | Aqaba |
+| ヌウェイバ | Nuweiba |
+| ダハブ | Dahab |
+| シナイ山 | Mount Sinai |
+| シャルム | Sharm el-Sheikh |
+| カイロ | Cairo |
+| ルクソール | Luxor |
+| アレクサンドリア | Alexandria |
+| ポートサイド | Port Said |
 
 ## Step 1: 入力を解析する
 - Step 0 で確認した国（Egypt / Jordan）とカテゴリを特定する
@@ -35,7 +53,7 @@ type: skill
 
 ファイル名: `Thought/YYYY-MM-DD_場所_topic.md`
 - 日付は今日の日付を使う
-- 場所は Step 0 で確認した地名を使う（例: Cairo, Petra, WadiRum）
+- 場所は Step 0 の対応表の英語表記をそのまま使う（スペースは除去：`WadiRum`, `MountSinai`, `DeadSea`, `SharmElSheikh`, `PortSaid`）
 - topicはユーザー入力から3〜5語で命名する（日本語OK）
 - 同日・同場所で複数ある場合は `_2`, `_3` を付ける
 
