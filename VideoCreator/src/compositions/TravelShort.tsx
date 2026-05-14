@@ -1,6 +1,6 @@
 import React from 'react';
 import {Audio, Series, staticFile} from 'remotion';
-import {ProjectData} from '../types';
+import {type ProjectData} from '../lib/schema';
 import {VideoScene} from '../components/VideoScene';
 
 export const TravelShort: React.FC<ProjectData> = ({

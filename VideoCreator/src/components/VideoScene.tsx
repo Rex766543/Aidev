@@ -4,6 +4,7 @@ import {
   OffthreadVideo,
   Sequence,
   interpolate,
+  spring,
   staticFile,
   useCurrentFrame,
   useVideoConfig,
@@ -29,6 +30,25 @@ export const VideoScene: React.FC<{
   );
 
   const caption = getCaptionForFrame(scene.captions, frame, fps);
+
+  const overlayVisibleFrames = Math.min(72, Math.floor(durationInFrames * 0.35));
+  const overlayEnter = spring({
+    frame,
+    fps,
+    config: {damping: 28, stiffness: 140},
+    durationInFrames: 20,
+  });
+  const overlayExit = interpolate(
+    frame,
+    [Math.max(0, overlayVisibleFrames - 14), overlayVisibleFrames],
+    [1, 0],
+    {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'},
+  );
+  const overlayOpacity = Math.min(overlayEnter, overlayExit);
+  const overlayY = interpolate(overlayEnter, [0, 1], [18, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   return (
     <AbsoluteFill style={{opacity}}>
@@ -88,7 +108,25 @@ export const VideoScene: React.FC<{
           padding: '84px 72px',
         }}
       >
-        <div />
+        {scene.overlayText ? (
+          <div
+            style={{
+              opacity: overlayOpacity,
+              transform: `translateY(${overlayY}px)`,
+              color: '#fffdf5',
+              fontSize: 38,
+              fontWeight: 600,
+              letterSpacing: 1.2,
+              lineHeight: 1.4,
+              textShadow: '0 2px 16px rgba(0,0,0,0.55)',
+              maxWidth: '80%',
+            }}
+          >
+            {scene.overlayText}
+          </div>
+        ) : (
+          <div />
+        )}
 
         <CaptionBlock caption={caption} frame={frame} fps={fps} />
       </AbsoluteFill>

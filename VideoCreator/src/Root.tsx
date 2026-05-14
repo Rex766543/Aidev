@@ -2,7 +2,7 @@ import React from 'react';
 import {Composition, type CalculateMetadataFunction} from 'remotion';
 import {TravelShort} from './compositions/TravelShort';
 import {getProjectDuration} from './lib/scene-utils';
-import {projectSchema, type ProjectSchema} from './lib/schema';
+import {projectSchema, type ProjectData as ProjectSchema} from './lib/schema';
 
 const sampleProps: ProjectSchema = {
   theme: 'Lisbon alley walk and market bites',
@@ -66,6 +66,7 @@ export const RemotionRoot: React.FC = () => {
     <Composition
       id="TravelShort"
       component={TravelShort}
+      schema={projectSchema}
       defaultProps={sampleProps}
       durationInFrames={getProjectDuration(sampleProps.scenes)}
       fps={sampleProps.fps}

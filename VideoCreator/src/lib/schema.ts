@@ -14,6 +14,14 @@ export const captionSegmentSchema = z.object({
   text: z.string().min(1),
 });
 
+export const videoSegmentSchema = z.object({
+  src: z.string().min(1),
+  startFrom: z.number().int().nonnegative(),
+  endAt: z.number().int().positive(),
+  playbackRate: z.number().positive(),
+  durationInFrames: z.number().int().positive(),
+});
+
 export const sceneAssetSchema = z.object({
   kind: z.enum(['image', 'video']),
   src: z.string().min(1),
@@ -22,17 +30,7 @@ export const sceneAssetSchema = z.object({
   startFrom: z.number().int().nonnegative().optional(),
   endAt: z.number().int().positive().optional(),
   playbackRate: z.number().positive().optional(),
-  segments: z
-    .array(
-      z.object({
-        src: z.string().min(1),
-        startFrom: z.number().int().nonnegative(),
-        endAt: z.number().int().positive(),
-        playbackRate: z.number().positive(),
-        durationInFrames: z.number().int().positive(),
-      }),
-    )
-    .optional(),
+  segments: z.array(videoSegmentSchema).optional(),
 });
 
 export const sceneSchema = z.object({
@@ -57,4 +55,10 @@ export const projectSchema = z.object({
   scenes: z.array(sceneSchema).min(1),
 });
 
-export type ProjectSchema = z.infer<typeof projectSchema>;
+export type MotionPreset = z.infer<typeof motionPresetSchema>;
+export type CaptionSegment = z.infer<typeof captionSegmentSchema>;
+export type VideoSegment = z.infer<typeof videoSegmentSchema>;
+export type SceneAsset = z.infer<typeof sceneAssetSchema>;
+export type Scene = z.infer<typeof sceneSchema>;
+export type ProjectData = z.infer<typeof projectSchema>;
+export type ProjectSchema = ProjectData;
