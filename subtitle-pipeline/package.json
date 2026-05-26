@@ -1,0 +1,13 @@
+{
+  "name": "subtitle-pipeline",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "transcribe": "node scripts/01-transcribe.mjs",
+    "correct": "node scripts/02-correct.mjs",
+    "apply-review": "node scripts/02-apply-review.mjs",
+    "layout": "node scripts/03-layout.mjs",
+    "ass-gen": "node scripts/04-ass-gen.mjs",
+    "pipeline": "node scripts/pipeline.mjs"
+  }
+}

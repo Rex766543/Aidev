@@ -33,22 +33,54 @@ const assignedBlockIds = new Set(
   (assignmentData.assignments ?? []).flatMap((assignment) => assignment.blocks ?? []),
 );
 
+// Japanese→English keyword map for common travel/culture concepts.
+// Add entries here as new destinations are covered.
 const keywordMap = [
   [/シーシャ/g, 'shisha'],
   [/イラン/g, 'iran'],
   [/ペルシャ/g, 'persia'],
+  [/カザフスタン/g, 'kazakhstan'],
+  [/日本/g, 'japan'],
+  [/韓国/g, 'south korea'],
+  [/タイ/g, 'thailand'],
+  [/インド/g, 'india'],
+  [/イタリア/g, 'italy'],
+  [/フランス/g, 'france'],
+  [/スペイン/g, 'spain'],
+  [/トルコ/g, 'turkey'],
+  [/モロッコ/g, 'morocco'],
+  [/エジプト/g, 'egypt'],
   [/古代/g, 'ancient'],
   [/歴史/g, 'history'],
   [/文明/g, 'civilization'],
   [/宗教/g, 'religion'],
   [/ゾロアスター教/g, 'zoroastrianism'],
   [/キュロス2世|キュロス大王/g, 'cyrus the great'],
+  [/遊牧/g, 'nomadic'],
+  [/草原/g, 'steppe'],
+  [/砂漠/g, 'desert'],
+  [/山岳/g, 'mountain'],
+  [/海岸/g, 'coast'],
   [/市場/g, 'market'],
   [/路地/g, 'alley'],
   [/文化/g, 'culture'],
   [/喫茶店/g, 'tea house'],
+  [/カフェ/g, 'cafe'],
   [/炭/g, 'charcoal'],
   [/香り/g, 'aroma'],
+  [/食事/g, 'food'],
+  [/料理/g, 'cuisine'],
+  [/建築/g, 'architecture'],
+  [/寺院/g, 'temple'],
+  [/モスク/g, 'mosque'],
+  [/伝統/g, 'tradition'],
+  [/工芸/g, 'craft'],
+  [/祭り/g, 'festival'],
+  [/旅行/g, 'travel'],
+  [/風景/g, 'landscape'],
+  [/街/g, 'city'],
+  [/村/g, 'village'],
+  [/人々/g, 'people'],
 ];
 
 const toEnglishHint = (value) => {
@@ -65,41 +97,19 @@ const toEnglishHint = (value) => {
 
 const buildCompactQueries = ({themeValue, blockText}) => {
   const base = toEnglishHint([themeValue, blockText].filter(Boolean).join(' ')).toLowerCase();
-  const prioritized = [];
 
-  const pushIfPresent = (term) => {
-    if (base.includes(term) && !prioritized.includes(term)) {
-      prioritized.push(term);
-    }
-  };
-
-  [
-    'iran',
-    'persia',
-    'ancient',
-    'history',
-    'civilization',
-    'zoroastrianism',
-    'cyrus the great',
-    'religion',
-    'people',
-    'culture',
-  ].forEach(pushIfPresent);
-
-  const genericTerms = base
+  const allWords = base
     .split(/\s+/)
-    .filter((word) => word.length >= 4)
-    .filter((word) => !prioritized.includes(word));
+    .filter((word) => word.length >= 3)
+    .filter((value, index, array) => array.indexOf(value) === index);
 
-  const terms = [...prioritized, ...genericTerms].slice(0, 5);
+  const terms = allWords.slice(0, 5);
   const joined = terms.join(' ').trim();
+  const themeWords = themeValue
+    ? toEnglishHint(themeValue).split(/\s+/).slice(0, 3).join(' ').trim()
+    : '';
 
-  return [...new Set([
-    joined,
-    terms.slice(0, 3).join(' ').trim(),
-    themeValue ? toEnglishHint(themeValue).split(/\s+/).slice(0, 3).join(' ').trim() : '',
-    'iran persia history',
-  ].filter(Boolean))];
+  return [...new Set([joined, terms.slice(0, 3).join(' ').trim(), themeWords].filter(Boolean))];
 };
 
 const detectExtension = (contentType) => {
@@ -135,23 +145,23 @@ const downloadImage = async (imageUrl) => {
   };
 };
 
-const downloadUnsplashFallback = async (query) => {
-  const fallbackUrl = `https://source.unsplash.com/featured/1080x1920/?${encodeURIComponent(query)}`;
+const downloadPicsumFallback = async (seed) => {
+  // picsum.photos provides deterministic free-to-use placeholder images.
+  // seed keeps results consistent across retries for the same block.
+  const safeWord = seed.replace(/[^a-z0-9]/gi, '').slice(0, 24) || 'travel';
+  const fallbackUrl = `https://picsum.photos/seed/${safeWord}/1080/1920`;
   const response = await fetch(fallbackUrl, {
     redirect: 'follow',
-    headers: {
-      'User-Agent': 'video-creator/1.0',
-      Accept: 'image/*',
-    },
+    headers: {'User-Agent': 'video-creator/1.0', Accept: 'image/*'},
   });
 
   if (!response.ok) {
-    throw new Error(`Unsplash fallback failed: ${response.status}`);
+    throw new Error(`Picsum fallback failed: ${response.status}`);
   }
 
-  const contentType = response.headers.get('content-type') ?? '';
+  const contentType = response.headers.get('content-type') ?? 'image/jpeg';
   if (!contentType.startsWith('image/')) {
-    throw new Error(`Unsplash fallback returned non-image content-type: ${contentType}`);
+    throw new Error(`Picsum fallback returned non-image content-type: ${contentType}`);
   }
 
   return {
@@ -245,22 +255,15 @@ for (const block of meaningBlocks) {
   }
 
   if (images.length === 0) {
-    for (const query of queries) {
-      try {
-        const {buffer, contentType, sourceUrl} = await downloadUnsplashFallback(query);
-        const fileName = `${block.id}-${slugify(query)}-fallback${detectExtension(contentType)}`;
-        const filePath = path.join(webImageDir, fileName);
-        fs.writeFileSync(filePath, buffer);
-        images.push({
-          filePath,
-          fileName,
-          sourceUrl,
-          title: query,
-        });
-        break;
-      } catch (error) {
-        console.error(error instanceof Error ? error.message : String(error));
-      }
+    const fallbackSeed = `${block.id}-${slugify(queries[0] ?? block.id)}`;
+    try {
+      const {buffer, contentType, sourceUrl} = await downloadPicsumFallback(fallbackSeed);
+      const fileName = `${block.id}-fallback${detectExtension(contentType)}`;
+      const filePath = path.join(webImageDir, fileName);
+      fs.writeFileSync(filePath, buffer);
+      images.push({filePath, fileName, sourceUrl, title: fallbackSeed});
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : String(error));
     }
   }
 

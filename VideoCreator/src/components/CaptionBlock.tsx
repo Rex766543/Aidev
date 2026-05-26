@@ -31,7 +31,10 @@ export const CaptionBlock: React.FC<{
     },
   );
   const opacity = Math.max(0, Math.min(1, enter * exit));
-  const translateY = interpolate(enter, [0, 1], [22, 0]);
+  const translateY = interpolate(enter, [0, 1], [22, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  });
 
   return (
     <div
