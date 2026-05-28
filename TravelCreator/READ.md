@@ -1,6 +1,4 @@
-# TravelCreator — READ.md
 
-Claude Codeのセッション開始時に必ずこのファイルを読み込むこと。
 
 ---
 
