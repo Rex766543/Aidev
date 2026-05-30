@@ -11,13 +11,13 @@
  * Character width rules (CJK-friendly):
  *   Full-width CJK/kana characters count as 1.0
  *   Half-width ASCII count as 0.5
- * Default max chars per line: 13 (≈ 936px at 72pt Noto Sans JP on 1080px wide canvas)
+ * Default max chars per line: 22 (≈ 1760px at 80pt Noto Sans JP on 1920px wide canvas)
  */
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const DEFAULT_MAX_CHARS = 13;
+const DEFAULT_MAX_CHARS = 22;
 const DEFAULT_MAX_LINES = 2;
 
 function charWidth(str) {

@@ -9,19 +9,20 @@
  * Output: subtitle.ass — open in Aegisub for timing tweaks, then burn with FFmpeg:
  *   ffmpeg -i input.mp4 -vf "ass=work/subtitle.ass" -c:a copy output.mp4
  *
- * Canvas: 1080×1920 (portrait / Shorts / TikTok)
- * Default font: Noto Sans JP (install via: brew install font-noto-sans-cjk-jp)
- *   macOS alt: "Hiragino Sans"
- *   Linux alt:  "Noto Sans CJK JP"
+ * Canvas: 1920×1080 (landscape / long-form YouTube)
+ * Default font: Hiragino Maru Gothic ProN (macOS-bundled; enable via Font Book if missing).
+ *   The font name is referenced as a string in the ASS Style line; the renderer
+ *   (Aegisub / libass via FFmpeg) must locate it on the system at render time.
+ *   Cross-platform fallback: "Hiragino Sans", "Noto Sans CJK JP".
  */
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const CANVAS_W = 1080;
-const CANVAS_H = 1920;
-const DEFAULT_FONT = 'Noto Sans JP';
-const DEFAULT_FONT_SIZE = 72;
+const CANVAS_W = 1920;
+const CANVAS_H = 1080;
+const DEFAULT_FONT = 'Hiragino Maru Gothic ProN';
+const DEFAULT_FONT_SIZE = 80;
 
 // ASS color format: &HAABBGGRR (alpha, blue, green, red in hex)
 const COLOR_WHITE = '&H00FFFFFF';
@@ -45,15 +46,15 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,${font},${fontSize},${COLOR_WHITE},${COLOR_BLACK},${COLOR_BLACK},${COLOR_SHADOW},-1,0,0,0,100,100,0,0,1,4,2,2,60,60,160,1
+Style: Default,${font},${fontSize},${COLOR_WHITE},${COLOR_BLACK},${COLOR_WHITE},${COLOR_SHADOW},-1,0,0,0,100,100,0,0,1,2,2,2,60,60,40,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text`;
 }
 
-// MarginV=160 → 160px from bottom of 1920px canvas
+// MarginV=40 → 40px from bottom of 1080px canvas
 // Alignment=2 → bottom-center (standard subtitle position)
-// Outline=4, Shadow=2 → readable on any background
+// Outline=2 (white, thin) + Shadow=2 → soft look, readable on any background
 // Bold=-1 (true)
 
 async function main() {
