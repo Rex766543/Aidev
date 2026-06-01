@@ -24,3 +24,8 @@ VideoCreator/projects/*/input/source-audio/*.mp3
 murder-mystery/pdf/
 presentations/*.pptx
 project-alpha/meetings/*/output/*.docx
+
+# TravelCreator large media (exceeds GitHub 100MB limit)
+TravelCreator/subtitle-pipeline/**/*.mp4
+TravelCreator/subtitle-pipeline/**/*.MP4
+TravelCreator/subtitle-pipeline/**/Video/

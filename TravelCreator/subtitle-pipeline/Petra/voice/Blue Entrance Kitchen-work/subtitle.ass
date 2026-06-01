@@ -1,0 +1,24 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1920
+PlayResY: 1080
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Hiragino Maru Gothic ProN,80,&H00FFFFFF,&H00000000,&H00FFFFFF,&H80000000,-1,0,0,0,100,100,0,0,1,2,2,2,60,60,40,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:01.98,0:00:10.82,Default,,0,0,0,,はいどうもこんにちは中東は全然危険じゃない\Nですそれだけをまず言いたいですいろいろいじく
+Dialogue: 0,0:00:10.82,0:00:18.32,Default,,0,0,0,,ったりしてますけど一応今どこ歩いてるのか\Nっていうとヨルダンっていう場所になってます場
+Dialogue: 0,0:00:18.32,0:00:29.32,Default,,0,0,0,,所的に変な場所にある感じなんですけど今音声い\Nろいろ入ってる感じでなんで気にせずっていう風
+Dialogue: 0,0:00:29.32,0:00:41.92,Default,,0,0,0,,に思っていただければとなんでこれ見る人って\Nどういうなんだろう歴史的な場所によくこういう
+Dialogue: 0,0:00:41.92,0:00:48.14,Default,,0,0,0,,犬見るなってのがあってカザフスタンキルゲスタ\Nン多分1年前ぐらいに行った時もあってやたら
+Dialogue: 0,0:00:48.34,0:00:57.70,Default,,0,0,0,,いるんですよね犬って多分人間を導く習性がある\Nんですよこの後また犬と会うんですけど広大な
+Dialogue: 0,0:00:57.70,0:01:04.72,Default,,0,0,0,,ところでそこでもちょっと自分と会ったらどっか\N行くんですよ逃げてんのかなとかって思ってた
+Dialogue: 0,0:01:04.72,0:01:14.50,Default,,0,0,0,,んですけど普通に回らぬ方向に行ってでも道っぽ\Nいところ行くからなんだろう普通にそのなんて言
+Dialogue: 0,0:01:14.50,0:01:19.38,Default,,0,0,0,,うんですかねこの多分自分が迷ってる人多分普段\N見ないような人だったんで追ってってんのかな
+Dialogue: 0,0:01:19.38,0:01:35.74,Default,,0,0,0,,っていう風には思ったんですよねインディアナ・\Nジョーンズが映画の舞台みたいで後でその友人
+Dialogue: 0,0:01:35.74,0:01:44.88,Default,,0,0,0,,から聞いて知ったんですけどそこのルートもある\Nみたいで上からそう上から見るみたいな感じ
+Dialogue: 0,0:01:44.88,0:01:45.80,Default,,0,0,0,,みたいですね

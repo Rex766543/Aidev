@@ -87,29 +87,38 @@ async function main() {
   );
 
   // Re-apply all corrections (high-conf from corrected-words.json + approved review items)
-  // We rebuild from the original words so indices are consistent.
-  // High-confidence corrections are already in corrected.words; we detect them by
-  // comparing corrected.words vs original.words using start timestamps as stable keys.
-  const correctedByStart = new Map((corrected.words ?? []).map((w) => [w.start, w]));
+  // by walking the original and corrected word lists together. corrected.words is the
+  // original list minus high-conf deletions (replacements preserve start/end), so it is
+  // an in-order subsequence of the original. We align with a two-pointer scan keyed on
+  // (start, end) — NOT a Map keyed on start alone, because zero-width words can share a
+  // start timestamp with the next word, which would collide and drop/duplicate words.
+  const correctedWords = corrected.words ?? [];
+  let ci = 0;
 
   const finalWords = [];
   for (let i = 0; i < originalWords.length; i++) {
     const orig = originalWords[i];
+    const cw = correctedWords[ci];
 
-    // Skip if approved for deletion in review
+    // A word survived the high-conf step iff the next unconsumed corrected word lines up
+    // with this original word by (start, end). Otherwise it was deleted there.
+    const survived = cw && cw.start === orig.start && cw.end === orig.end;
+    if (!survived) continue;
+
+    // Consume the matched corrected word.
+    ci++;
+
+    // Skip if approved for deletion in review.
     if (approvedDeleteSet.has(i)) continue;
 
-    // Check if high-conf step already deleted this word (not present by start time)
-    if (!correctedByStart.has(orig.start)) continue;
-
-    // Apply approved replacement
+    // Apply approved replacement.
     if (approvedReplaceMap.has(i)) {
       finalWords.push({ ...orig, word: approvedReplaceMap.get(i) });
       continue;
     }
 
-    // Use the (possibly already replaced) word from corrected output
-    finalWords.push(correctedByStart.get(orig.start));
+    // Use the (possibly already replaced) word from corrected output.
+    finalWords.push(cw);
   }
 
   const output = { ...corrected, words: finalWords };
