@@ -11,8 +11,42 @@ RAG / AI が後から参照しやすい構造化 Markdown に整理して `knowl
 - 直接スキルとしても利用可能
 
 ## 入力
-- ソース本体（貼り付けテキスト / URL / ファイルパス / PDF / 音声書き起こし / メモ）。複数同時もあり得る。
+- ソース本体（貼り付けテキスト / URL / ファイルパス / PDF / 音声ファイル / 音声書き起こし / メモ）。複数同時もあり得る。
 - 任意の「まとめ観点」指定（例: 「コスト面だけ」「反論材料として」）。指定があれば必ずそれに従う。
+
+## URL入力の取得（前処理）
+
+入力にURLが含まれる場合、整理に入る前に本文テキストを確定させる。
+**取得手段の選択ルールと Jina の能力・制約は `.claude/skills/_shared/jina-reader.md` を参照する**
+
+要点だけ:
+- **X/Twitter URL** → Jina (`jina_read_url`)。失敗時はユーザーに報告し、テキスト貼り付けを促す（無理に回避しない）。`source_type: "x"`
+- **通常URL** → WebFetch（標準）。失敗時のみ Jina にフォールバック。`source_type: "article"`
+- 取得した本文を以降の整理フローの入力とする。
+
+## 音声ファイルの前処理（Whisper 文字起こし）
+
+入力が音声ファイル（拡張子 `.mp3` / `.wav` / `.m4a` / `.aac` / `.flac` / `.mp4` / `.ogg` など）の場合、
+まず Whisper でテキスト化してから通常の整理フローに進む。
+
+### 手順
+
+```bash
+# 1. 一時出力先を決める
+OUT_JSON="/tmp/ko_whisper_$(date +%s).json"
+
+# 2. Whisper で文字起こし（medium モデルを使用）
+/Users/ishikawaryuusuke/Desktop/aidev/TravelCreator/subtitle-pipeline/.venv-whisper/bin/python \
+  /Users/ishikawaryuusuke/Desktop/aidev/tools/whisper/transcribe_local.py \
+  "<音声ファイルの絶対パス>" \
+  "$OUT_JSON" \
+  medium
+```
+
+- モデルはデフォルト `medium`。ユーザーが `large` や `large-v3` を指定した場合はそちらを使う。
+- 完了後、Read ツールで `$OUT_JSON` を読み込み、`.text` フィールドを本文テキストとして扱う。
+- `source_type` は `"audio"` にする。
+- 文字起こし原文はナレッジ本文末尾に `## 文字起こし原文` セクションとして付記する（後で検索可能にするため）。
 
 ## 大原則（トークン効率と品質）
 このナレッジは将来 AI / RAG が検索して参照する。AI が**必要なファイルだけ**を開き、
