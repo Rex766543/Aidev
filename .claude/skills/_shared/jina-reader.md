@@ -13,8 +13,8 @@ MCP サーバー: `jina-reader`（`~/.claude/settings.json` 登録済み、`JINA
 
 | 入力 | 使う手段 | 理由 |
 |------|---------|------|
-| **x.com / twitter.com URL** | **Jina** (`jina_read_url`) | WebFetchはXにブロックされやすい。Jina+APIキーの方が取得率が高い |
-| JS必須・無限スクロール等の重いページ、WebFetchが失敗したページ | **Jina** (`jina_read_url`) | 全文をクリーンなMarkdownで取得できる |
+| **x.com / twitter.com URL** | **段階的フォールバック**（下記カスケード） | WebFetchはXにブロックされやすい。Jina経由が取得率が高い |
+| JS必須・無限スクロール等の重いページ、WebFetchが失敗したページ | **Jina**（キー無し→キー付き） | 全文をクリーンなMarkdownで取得できる |
 | **その他の通常URL**（ニュース・ブログ・ドキュメント等） | **WebFetch**（Claude Code標準） | 無料。Jinaトークンを消費しない |
 | URLでない（テキスト/PDF/音声/メモ） | Jina不使用 | そのまま整理（音声はWhisper前処理） |
 
@@ -24,14 +24,26 @@ MCP サーバー: `jina-reader`（`~/.claude/settings.json` 登録済み、`JINA
 入力を受け取る
   ↓
 URLか？ （http:// / https:// で始まる）
-  ├─ x.com / twitter.com を含む → Jina (jina_read_url)
+  ├─ x.com / twitter.com を含む → ① キー付きJina → ② Playwright →（任意③ キー無しJina）
   ├─ その他のURL              → WebFetch（標準ツール）
   │                              └ WebFetchが失敗 → Jina にフォールバック
   └─ URLでない                → Jina不使用（テキスト/音声フローへ）
 ```
 
+#### X/Twitter URL の取得カスケード（順に試し、成功した時点で打ち切り）
+
+> 方針変更（2026-06-16）：キー無しJinaは匿名共有プールが他ユーザーの乱用で頻繁に`451`再ブロックされ不安定（実測で連日ブロック）。
+> そのため**最初からキー付きJinaに寄せ、次点をPlaywrightに繰り上げる**。
+
+1. **① キー付きJina（最初に試す）** — `jina_read_url`（MCP）／無ければ `WebFetch` で `https://r.jina.ai/<元のURL>` に `Authorization: Bearer $JINA_API_KEY` を付けて取得。
+   - キー単位のレート管理で匿名プールの`451`を回避。実測でXの公開ポストを本文・投稿日時まで安定取得できる（最有力）。
+2. **② Playwright（①が失敗したら）** — `browser_navigate`（タイトルに本文が出ることが多い）→ `browser_snapshot` でポスト本文・引用・ツリーを拾う。
+   - 公開ポストのレンダリング取得。検索ページ等ログイン必須のURLは取得不可。
+3. **（任意）③ キー無しJina** — `WebFetch` で `https://r.jina.ai/<URL>`。トークン消費ゼロだが匿名ブロックを踏みやすい。①②が使えない時の無料の最後の手段。
+4. **全部失敗** → エラー内容を報告し、ユーザーに投稿テキストの貼り付けを依頼。
+
 - URL判定: `http://` / `https://` で始まる文字列
-- 複数URLが混在 → X系はJina、通常URLはWebFetchに振り分け。Jina側で複数あれば `jina_read_urls`（dedupe=true）
+- 複数URLが混在 → X系は上記カスケード、通常URLはWebFetchに振り分け。Jina側で複数あれば `jina_read_urls`（dedupe=true）
 
 ---
 
@@ -46,22 +58,23 @@ URLか？ （http:// / https:// で始まる）
 
 ---
 
-## X/Twitter URL の扱い（Jina使用時の制約）
+## X/Twitter URL の扱い（カスケード時の制約）
 
 ### できること
-- **公開ポスト**の URL を `jina_read_url` に渡して本文テキストを取得できる場合がある
-- APIキーありの場合、匿名アクセスより取得成功率が上がる
+- **公開ポスト**の URL から本文テキストを取得できる（①キー無しJina／②キー付きJina／③Playwright のいずれか）
+- ポストに貼られたメディアや、ツリーにぶら下がる返信ポストも拾える場合がある
 - `jina_search_web` で `site=["x.com"]` 絞り込みにより、X投稿を検索結果として得られる
 
-### できないこと・エラーになる場合
-| 状況 | エラー内容 |
-|------|-----------|
-| ログイン必須のページ | `forbidden` / `http_error 451` |
-| X側がJinaのIPをブロック中 | `http_error 451` (Anonymous access blocked) |
-| 削除・非公開ポスト | `not_found` / `http_error` |
-| ブックマーク・いいね一覧など認証ページ | 取得不可 |
+### 失敗の典型と、次段への進み方
+| 状況 | エラー内容 | 対処 |
+|------|-----------|------|
+| 匿名共有プールが一時ブロック中 | `451 Anonymous access blocked`（他ユーザーの乱用の巻き添え。期限付き） | **①失敗 → ②キー付きJina** で回避できることが多い |
+| キー付きでも取得不可 | `forbidden` / `http_error` | **②失敗 → ③Playwright** へ |
+| ログイン必須・削除・非公開ポスト | `forbidden` / `not_found` | カスケードを最後まで試して全滅なら貼り付け依頼 |
+| ブックマーク・いいね一覧など認証ページ | 取得不可 | 認証が要るものは取得を諦める |
 
 ### エラー時の対処方針
-- `result.ok === false` → エラー内容（`error.type` / `error.message`）をそのままユーザーに報告
-- 「X側の制限やログイン壁により取得できませんでした。投稿テキストを直接貼り付けてください。」と案内
-- **無理に回避・リトライしない**（ログインバイパス・Playwright不使用）
+- 各段の失敗（`result.ok === false` 等）は**握りつぶさず次段へ進む**。カスケード（①→②→③）を順に試す。
+- **全段失敗した場合のみ**、最後のエラー内容（`error.type` / `error.message`）を添えて報告し、
+  「X側の制限やログイン壁により取得できませんでした。投稿テキストを直接貼り付けてください。」と案内する。
+- ログインバイパス（認証回避）は行わない。Playwrightは**公開ページのレンダリング取得**としてのみ使う。

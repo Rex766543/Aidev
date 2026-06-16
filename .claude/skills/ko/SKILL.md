@@ -16,13 +16,26 @@ RAG / AI が後から参照しやすい構造化 Markdown に整理して `knowl
 
 ## URL入力の取得（前処理）
 
-入力にURLが含まれる場合、整理に入る前に本文テキストを確定させる。
-**取得手段の選択ルールと Jina の能力・制約は `.claude/skills/_shared/jina-reader.md` を参照する**
+URLが含まれるなら、整理前に本文を確定させる。手段は以下のロジックで決める（上から評価）。
 
-要点だけ:
-- **X/Twitter URL** → Jina (`jina_read_url`)。失敗時はユーザーに報告し、テキスト貼り付けを促す（無理に回避しない）。`source_type: "x"`
-- **通常URL** → WebFetch（標準）。失敗時のみ Jina にフォールバック。`source_type: "article"`
-- 取得した本文を以降の整理フローの入力とする。
+```python
+def fetch(url):
+    if not is_x(url):                 # x.com / twitter.com 以外
+        text = webfetch(url)          # source_type="article"
+        return text or jina_key(url)  # WebFetch失敗時のみJinaにフォールバック
+
+    # X URL → source_type="x"。成功した時点でreturn、失敗なら次段
+    # キー無しJinaは匿名プールが連日451ブロックで不安定 → キー付きを先頭、Playwrightを次点に
+    return (jina_key(url)                          # ① キー付きJina: MCP jina_read_url（最有力）
+            or playwright(url)                     # ② browser_navigate → browser_snapshot
+            or webfetch(f"https://r.jina.ai/{url}")# ③ (任意) キー無しJina: 無料の最後の手段
+            or ask_user_to_paste())                # 全滅時のみ貼り付け依頼
+
+is_x   = lambda u: "x.com" in u or "twitter.com" in u
+jina_key = jina_read_url   # JINA_API_KEY 適用済みMCP
+```
+
+各手段の能力・制約・エラー対処は `.claude/skills/_shared/jina-reader.md` を参照。
 
 ## 音声ファイルの前処理（Whisper 文字起こし）
 
@@ -85,10 +98,11 @@ captured_at: "YYYY-MM-DD"   # 本日の日付
 topic:
   - <推定カテゴリ。確信が持てなければ仮置きでよい。/cat が最終決定する>
 tags:
-  - <検索軸となる固有名詞・概念を複数。具体的に>
+  - <検索軸となる固有名詞・概念。**最大5個まで**。本論に直接関係するものだけを具体的に選ぶ>
 ---
 ```
 
+- `tags` は **5個を上限**とし、本論（主張・核心）に直接関わるキーワードだけに絞る。本論に関係しない枝葉・周辺概念はタグにしない。数より精度を優先する。
 - そのソース固有の理由で項目が要るときだけ、判断して追加する。
 
 ## ファイル命名

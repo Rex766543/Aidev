@@ -5,3 +5,4 @@
 
 ## sources
 <!-- entries below -->
+- 2026-06-14 [claude-peers-mcpによるセッション間連携](../sources/ai-tools/2026-06-14_article_claude-peers-mcpによるセッション間連携.md) — タグ: claude-peers, claude-code, MCP, マルチセッション連携, agent-teams
