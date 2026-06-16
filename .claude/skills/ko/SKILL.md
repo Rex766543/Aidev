@@ -16,26 +16,24 @@ RAG / AI が後から参照しやすい構造化 Markdown に整理して `knowl
 
 ## URL入力の取得（前処理）
 
-URLが含まれるなら、整理前に本文を確定させる。手段は以下のロジックで決める（上から評価）。
+入力にURLが含まれる場合、整理に入る前に本文テキストを確定させる。
+URLを見たら、まず **x.com / twitter.com を含むか** だけで二分岐する。
 
-```python
-def fetch(url):
-    if not is_x(url):                 # x.com / twitter.com 以外
-        text = webfetch(url)          # source_type="article"
-        return text or jina_key(url)  # WebFetch失敗時のみJinaにフォールバック
+### 分岐ルール（必ずこの順で判定）
 
-    # X URL → source_type="x"。成功した時点でreturn、失敗なら次段
-    # キー無しJinaは匿名プールが連日451ブロックで不安定 → キー付きを先頭、Playwrightを次点に
-    return (jina_key(url)                          # ① キー付きJina: MCP jina_read_url（最有力）
-            or playwright(url)                     # ② browser_navigate → browser_snapshot
-            or webfetch(f"https://r.jina.ai/{url}")# ③ (任意) キー無しJina: 無料の最後の手段
-            or ask_user_to_paste())                # 全滅時のみ貼り付け依頼
+1. **そのURLは X（x.com / twitter.com）か？**
+   - **NO（Xでない）→  `WebFetch` で取得する。** 通常のニュース・ブログ・ドキュメント等はすべてこれ。
+     Jinaは使わない（無料トークンを温存）。`WebFetch` が失敗したときだけ Jina にフォールバックする。`source_type: "article"`
+   - **YES（Xである）→ Jina を参照して、下記カスケードを上から順に実行する。** `source_type: "x"`
 
-is_x   = lambda u: "x.com" in u or "twitter.com" in u
-jina_key = jina_read_url   # JINA_API_KEY 適用済みMCP
-```
+2. **X の取得カスケード（成功した時点で打ち切り。失敗したら必ず次段へ進む）**
+   1. **① キー無しJina** — `WebFetch` で `https://r.jina.ai/<元のURL>` を取得（トークン消費なし）。
+   2. **② キー付きJina** — ①が失敗したら MCP `jina_read_url`（`JINA_API_KEY` 適用済み）。
+   3. **③ Playwright** — ②も失敗したら `browser_navigate` → `browser_snapshot` でレンダリング取得。
+   4. **全段失敗** → そこで初めてユーザーに投稿テキストの貼り付けを依頼する。
 
-各手段の能力・制約・エラー対処は `.claude/skills/_shared/jina-reader.md` を参照。
+詳細（各手段の能力・制約・エラー対処）は **`.claude/skills/_shared/jina-reader.md`** を参照。
+取得した本文を以降の整理フローの入力とする。
 
 ## 音声ファイルの前処理（Whisper 文字起こし）
 
