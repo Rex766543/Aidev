@@ -5,3 +5,4 @@
 
 ## sources
 <!-- entries below -->
+- 2026-06-21 [Xアルゴリズムに基づく投稿設計](../sources/system-design/2026-06-21_memo_Xアルゴリズムに基づく投稿設計.md) — タグ: X(Twitter)アルゴリズム, For Youランキング, Phoenix Retrieval, エンゲージメント予測, SNS投稿設計
